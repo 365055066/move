@@ -3,15 +3,12 @@
 import json
 import threading
 
-from autobahn.twisted.websocket import WebSocketClientFactory, \
-    WebSocketClientProtocol, \
-    connectWS
+from autobahn.twisted.websocket import WebSocketClientFactory, WebSocketClientProtocol, connectWS
 from twisted.internet import reactor, ssl
 from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.internet.error import ReactorAlreadyRunning
 
-from brickmover.market.binance.rest.client import BinanceClientRest
-
+import  brickmover.market.binance.rest.api as Restapi
 
 class BinanceClientProtocol(WebSocketClientProtocol):
 
@@ -68,7 +65,7 @@ class Api(threading.Thread):
 
     _user_timeout = 30 * 60  # 30 minutes
 
-    def __init__(self, client):
+    def __init__(self, Restapi):
         """Initialise the BinanceSocketManager
 
         :param client: Binance API client
@@ -80,7 +77,7 @@ class Api(threading.Thread):
         self._user_timer = None
         self._user_listen_key = None
         self._user_callback = None
-        self._client = client
+        self._client = Restapi
 
     def _start_socket(self, path, callback, prefix='ws/'):
         if path in self._conns:
@@ -165,7 +162,7 @@ class Api(threading.Thread):
             socket_name = '{}{}'.format(socket_name, depth)
         return self._start_socket(socket_name, callback)
 
-    def start_kline_socket(self, symbol, callback, interval=BinanceClientRest.KLINE_INTERVAL_1MINUTE):
+    def start_kline_socket(self, symbol, callback, interval=Restapi.Api.KLINE_INTERVAL_1MINUTE):
         """Start a websocket for symbol kline data
 
         https://github.com/binance-exchange/binance-official-api-docs/blob/master/web-socket-streams.md#klinecandlestick-streams
