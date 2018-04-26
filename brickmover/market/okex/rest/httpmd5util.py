@@ -33,7 +33,7 @@ def httpPost(url,resource,params):
     data = response.read().decode('utf-8')
     params.clear()
     conn.close()
-    return data
+    return json.loads(data)
 
 
         

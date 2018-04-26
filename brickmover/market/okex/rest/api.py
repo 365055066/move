@@ -5,8 +5,8 @@ from brickmover.market.okex.rest.httpmd5util   import buildMySign,httpGet,httpPo
 
 class Api:
 
-    def __init__(self,url,apikey,secretkey):
-        self.__url = url
+    def __init__(self,apikey='',secretkey=''):
+        self.__url = 'www.okex.com'
         self.__apikey = apikey
         self.__secretkey = secretkey
 
@@ -19,11 +19,13 @@ class Api:
         return httpGet(self.__url,TICKER_RESOURCE,params)
 
     #获取OKCOIN现货市场深度信息
-    def depth(self,symbol = ''):
+    def depth(self,symbol = '',size = 5):
         DEPTH_RESOURCE = "/api/v1/depth.do"
         params=''
         if symbol:
             params = 'symbol=%(symbol)s' %{'symbol':symbol}
+            params += '&size=%(size)s' %{'size':size}   
+            
         return httpGet(self.__url,DEPTH_RESOURCE,params) 
 
     #获取OKCOIN现货历史交易信息

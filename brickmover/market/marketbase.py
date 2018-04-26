@@ -12,10 +12,10 @@ class MarketBase(object):
         self.order_size_min = order_size_min
         self.order_size_precision = 1/self.order_size_min
         
-        #self.symbol_reserved = 0
-        #self.symbol_available = 0
-        #self.currency_reserved = 0
-        #self.currency_available = 0
+        #self.target_reserved = 0
+        #self.target_available = 0
+        #self.base_reserved = 0
+        #self.base_available = 0
    
     def GetMarketCode(self):
         return self.marketcode   
@@ -35,18 +35,30 @@ class MarketBase(object):
         pass
     
     def Buy(self,price,quantitye):
+        '''
+        return: orderid
+        '''
         pass
  
     def Sell(self,price,quantity):
+        '''
+        return: orderid
+        '''
         pass
    
     def CancelOrder(self,orderid=None):
+        '''
+        return: True or False
+        '''
         pass
-    
+
+    def GetOrder(self,orderid=None):
+        pass   
+
     def GetOrders(self,orderid=None):
         pass
     
-    def GetAccountInfo(self):
+    def GetAccount(self):
         pass    
 
 
