@@ -124,6 +124,16 @@ class Api:
 
         return self.put(locals())
 
+    def new_order(self, client_order_id, symbol_code, side, quantity, price=None):
+        """Place an order."""
+        data = {'symbol': symbol_code, 'side': side, 'quantity': quantity}
+
+        if price is not None:
+            data['price'] = price
+
+        urllll = 'https://api.hitbtc.com/api/2'
+        return self.session.put("%s/order/%s" % (urllll, client_order_id), data=data).json()
+
     def delete_order_by_id(self, clientOrderId: str) -> dict:
         path = '/order/'
         if clientOrderId is None:

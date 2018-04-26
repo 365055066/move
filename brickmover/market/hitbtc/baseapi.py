@@ -1,272 +1,92 @@
-from brickmover.market.marketbase import MarketBase
-from threading import Thread
-
-import brickmover.market.hitbtc.wss.api.Api as Hitbtcwssapi
-
+from brickmover.market.marketbase  import MarketBase
+import brickmover.market.hitbtc.rest.api as restapi
+from pprint import pprint
 import time
-import queue
-import copy
-import logging
 
-class hitbtcmarket(MarketBase):
+
+class BaseApi(MarketBase):
+    def __init__(self,key='',secret='',target='',base='',price_min_move=100000000,order_size_min=100000000):
+        super(BaseApi, self).__init__('hitbtc',target.upper(),base.upper(),price_min_move,order_size_min)  
+        self.restapi = restapi.Api(key,secret)
+        self.symbol = target.upper() + base.upper()
+        self.patialid = 0
+        
+    #market info
+    def GetTicker(self):
+        response = self.restapi.get_symbol_ticker(symbol=self.symbol)
+        return {'last':float(response['last'])}
     
-    def __init__(self,key='',secret='', symbol='',currency='',eventengie=None,needdepthlenth=5):
-        super().__init__('hitbtc',symbol.upper(),currency.upper(),eventengie)
-
-        self.key= key 
-        self.secret =secret 
-        
-        self.code = symbol.upper() + currency.upper()
-        self.hitbtapi  = Hitbtcwssapi()
-        self.__thread = Thread(target = self.__run)  
-        self.__thread.start() 
-        self.__handlers =  {  
-                'snapshotOrderbook':self.__onSnapshotOrderbook,  
-                'updateOrderbook':self.__onUpdateOrderbook,
-                'Response':self.__onResponse,
-                'report':self.__onReport,
-                'activeOrders':self.__onActiveOrders,
-                'ticker':self.__onTicker,
-            }   
-        
-        self.depthsequence=0
-        self.asks = []
-        self.bids = []
-        self.maxdepthlenth = 50
-        self.needdepthlenth= needdepthlenth
-        
-        self.patialid=0
+    def GetDepth(self):
+        response = self.restapi.get_order_book_for_symbol(symbol=self.symbol,limit=5)
+        depth = self.format_depth(response)
+        return depth
     
-    def __run(self):
-        self.hitbtapi.start()  # start the websocket connection
-        time.sleep(6)  # Give the socket some time to connect
-        
-        self.hitbtapi.login(key=self.key,secret=self.secret)
-        
-        while True:
-            try:
-                data = self.hitbtapi.recv()
-            except queue.Empty:
-                continue
-            #print("...")
-            #print(data)
-            method = data[0]
-            handller = self.__handlers.get(method)
-            if handller != None:
-                handller(data[1])
+    def GetTrades(self):
+        pass     
 
-    def __onResponse(self,data):
-        handlers =  {  
-                'login':self.__onLogin,  
-                'getTradingBalance':self.__onGetTradingBalance,
-            } 
-        try:
-            method = data[0]['method']
-        except Exception as e:
-            logging.error(e)
-            return
-            
-        handler = handlers.get(method)
-        if handler != None:
-            handler(data)
+    #trade
+    def Login(self):
+        pass
     
-    def __onReport(self,data):
-        #data = data[2]
-        if data['symbol']==self.code:
-            orderdata={}
-            orderdata['clientOrderId'] = data['clientOrderId']
-            orderdata['orderId'] = data['id']
-            orderdata['side'] = data['side']
-            orderdata['price'] = float(data['price'])
-            orderdata['quantity'] = float(data['quantity'])
-            orderdata['quantityExcuted'] = float(data['cumQuantity'])
-            orderdata['status'] = data['status']
-            orderdata['updatetime'] = data['updatedAt']
-            orderdata['isResidual'] = False
-            if 'tradeFee' in data:
-                orderdata['tradeFee'] = float(data['tradeFee'])
-            self.onOrder(orderdata)
-    
-    def __onActiveOrders(self,data):
-        for order in data:
-            if order['symbol'] == self.code :
-                orderdata={}
-                orderdata['clientOrderId'] = order['clientOrderId']
-                orderdata['orderId'] = order['id']
-                orderdata['side'] = order['side']
-                orderdata['price'] = float(order['price'])
-                orderdata['quantity'] = float(order['quantity'])
-                orderdata['quantityExcuted'] = float(order['cumQuantity'])
-                orderdata['status'] = order['status']
-                orderdata['updatetime'] = order['updatedAt']
-                orderdata['isResidual'] = True
-                if 'tradeFee' in order:
-                    orderdata['tradeFee'] = float(order['tradeFee'])
-                self.onOrder(orderdata)    
-                
-         
-    def __onTicker(self,data): 
-        data['ask'] = float(data['ask'] )
-        data['bid'] = float(data['bid'] )
-        self.onTick(data)
-    
+    def Buy(self,price,quantity):
+        #response = self.restapi.post_order_for_symbol(symbol=self.symbol, side='buy', type="limit", 
+        #                                              quantity=quantity,price=price, 
+        #                                              clientOrderId=self.genNextCliendid(),   timeInForce = 'GTC')
         
-    def __onLogin(self,data):
-        result = data[1]['result']
-        if result is True:
-            self.onLogined(True)
-            #self.hitbtapi.subscribe_book(symbol=self.code) 
-            self.hitbtapi.subscribe_reports()
-            self.hitbtapi.request_balance() 
-            self.hitbtapi.subscribe_ticker(symbol=self.code) 
-        else:
-            self.onLogined(False)
-        
+        response = self.restapi.new_order(client_order_id=self.genNextCliendid(), symbol_code=self.symbol, side='buy', quantity=quantity, price=price)
+        pprint(response)
+ 
+    def Sell(self,price,quantity):
+        pass
+   
+    def CancelOrder(self,orderid=None):
+        response = self.restapi.delete_order_by_id(clientOrderId=orderid)
+        pprint(response)
 
-    def __onSnapshotOrderbook(self,data):
-        depth = data
-        if depth['symbol'] == self.code:
-            asks = depth["ask"][0:self.maxdepthlenth]
-            bids = depth["bid"][0:self.maxdepthlenth]
-            #asks.sort(key=lambda x: float(x["price"]), reverse=False)
-            #bids.sort(key=lambda x: float(x["price"]), reverse=True)
-            
-            self.asks = []
-            for i in asks:
-                self.asks.append({'price': float(i["price"]), 'size': float(i["size"])})
-                
-            self.bids = []
-            for i in bids:
-                self.bids.append({'price': float(i["price"]), 'size': float(i["size"])})
-            
-            self.depthsequence= depth["sequence"]
-            
-            
-    def __onUpdateOrderbook(self,data): 
-        depth = data
-        if depth['symbol'] == self.code:
-            if  depth["sequence"] - self.depthsequence == 1:
-                asks_o = depth["ask"][0:self.maxdepthlenth]
-                bids_o = depth["bid"][0:self.maxdepthlenth]
-                #asks.sort(key=lambda x: float(x["price"]), reverse=False)
-                #bids.sort(key=lambda x: float(x["price"]), reverse=True)
-                asks = []
-                for i in asks_o:
-                    asks.append({'price': float(i["price"]), 'size': float(i["size"])})
-                self.asks= self.__updateOrderbook(self.asks,asks,True)
-            
-                bids = []
-                for i in bids_o:
-                    bids.append({'price': float(i["price"]), 'size': float(i["size"])})
-                self.bids = self.__updateOrderbook(self.bids,bids,False)
-     
-                if self.asks[0]['price']<=self.bids[0]['price'] :
-                    self.__onOrderBookError()
+    def GetOrder(self,orderid=None):
+        pass   
 
-                self.depthsequence= depth["sequence"]
-                
-                self.onDepth({'asks': copy.deepcopy( self.asks[0:self.needdepthlenth] ),
-                              'bids': copy.deepcopy( self.bids[0:self.needdepthlenth] )})
-                
-            else:
-                self.__onOrderBookError()
-            
-    def __updateOrderbookItem(self,orderbook,updateitem):
-        if len(orderbook)==0:
-                orderbook.append(updateitem)
-        else:
-            if orderbook[-1] ['price']==updateitem['price'] :
-                if updateitem['size'] == 0 or  orderbook[-1]['size']==0:
-                    del orderbook[-1]
-                else:
-                    orderbook[-1]['size']=  orderbook[-1]['size']+ updateitem['size']                  
-            else:
-                orderbook.append(updateitem)
+    def GetOrders(self,orderid=None):
+        pass
+    
+    def GetAccount(self):
+        response = self.restapi.get_trading_balance()
+        account = {}
+        for item in response:
+            if item['currency'] == self.target:
+                account[self.target] = {'free':float(item['available']),
+                                        'locked':float(item['reserved'])} 
+            elif item['currency'] == self.base:
+                account[self.base] = {'free':float(item['available']),
+                                      'locked':float(item['reserved'])} 
+        return account  
 
-    def __updateOrderbook(self,book1,book2,increase=True):
-        count1 = len(book1)
-        count2 = len(book2)
-        catlen = count1+count2
+
+
+
+    
+######################################################
+    def sort_and_format(self, l, reverse=False):
+        l.sort(key=lambda x: float(x['price']), reverse=reverse)
         r = []
-        for i in range(0,catlen):
-            if count1>0 and count2 > 0:
-                item1 = book1[0]
-                item2 = book2[0]
-                if increase:
-                    if item1['price']<=item2['price'] :
-                        updateitem = item1
-                        movelist = book1
-                        count1 -=1
-                    else:
-                        updateitem = item2
-                        movelist = book2
-                        count2 -=1
-                else:
-                    if item1['price']>=item2['price'] :
-                        updateitem = item1
-                        movelist = book1
-                        count1 -=1
-                    else:
-                        updateitem = item2
-                        movelist = book2
-                        count2 -=1
-                
-                self.__updateOrderbookItem(r,updateitem)
-                del movelist[0] 
-            elif count1 > 0:
-                updateitem= book1[0]  
-                self.__updateOrderbookItem(r,updateitem)
-                count1 -=1
-                del book1[0]  
-            elif count2 > 0:
-                updateitem = book2[0] 
-                self.__updateOrderbookItem(r,updateitem) 
-                count2 -=1
-                del book2[0]   
-        return r[0:self.maxdepthlenth]
+        for i in l:
+            r.append({'price': float(i['price']), 'quantity': float(i['size'])})
+        return r
 
-    def __onOrderBookError(self):
-        logging.error("onOrderBookError")
-        self.onDepth(None)
-        self.hitbtapi.subscribe_book(cancel=True, symbol=self.code)
-        time.sleep(1)
-        self.hitbtapi.subscribe_book(symbol=self.code)
-
-    def __onGetTradingBalance(self,data):
-        result = data[1]['result']
-        for item in result:
-            if item['currency'] == self.symbol:
-                self.symbol_reserved = float(item['reserved'])
-                self.symbol_available = float(item['available'])
-            elif item['currency'] == self.currency:
-                self.currency_reserved = float(item['reserved'])
-                self.currency_available = float(item['available'])
-        self.onAccountInfo({'symbol_reserved':copy.deepcopy(self.symbol_reserved),
-                            'symbol_available':copy.deepcopy(self.symbol_available),
-                            'currency_reserved':copy.deepcopy(self.currency_reserved),
-                            'currency_available':copy.deepcopy(self.currency_available),
-                            })
-        
-    def sendOrder(self,side,price,quantity,cliendid=None):
-        if cliendid == None:
-            self.patialid = (self.patialid+1)%1000000
-            randomid = str(int(time.time())*1000000 + self.patialid)
-        
-        self.hitbtapi.place_order(
-                clientOrderId =  cliendid or randomid ,
-                symbol=self.code,
-                side=side,
-                type='limit',
-                quantity=quantity,
-                price=price)
-        
-    def cancelOrder(self,orderid=None,clientOrderId=None):
-        if clientOrderId is not None:
-            self.hitbtapi.cancel_order(clientOrderId=clientOrderId)
-        else:
-            raise Exception('hitbtc cancelOrder clientOrderId == None')
+    def format_depth(self, depth):
+        if(depth==None):
+            return None
+        bids = self.sort_and_format(depth['bid'], True)
+        asks = self.sort_and_format(depth['ask'], False)
+        return {'asks': asks, 'bids': bids}    
     
-    def getAccountInfo(self):
-        self.hitbtapi.request_balance() 
-        
+    def genNextCliendid(self):
+        self.patialid = (self.patialid+1)%10000
+        cliendid = str(int(time.time())*10000 + self.patialid)        
+        return  cliendid       
+    
+    
+    
+    
+    
     
