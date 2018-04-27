@@ -14,8 +14,8 @@ class MarketBase(object):
         
     def GetMarketCode(self):
         return self.marketcode   
-   
-    #market info
+  
+    ################## Every market have Base API ############  
     def GetTicker(self):
         '''
         :returns: ticker or None
@@ -31,10 +31,6 @@ class MarketBase(object):
     def GetTrades(self):
         pass     
 
-    #trade
-    def Login(self):
-        pass
-    
     def Buy(self,price,quantitye):
         '''
         :returns: order id,None if not
@@ -79,6 +75,7 @@ class MarketBase(object):
         pass    
 
 
-
-
+    ############ Not every market have Extend API ##############
+    def GetKline(self,period,limit):
+        pass
     

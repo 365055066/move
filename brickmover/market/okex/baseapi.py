@@ -52,10 +52,6 @@ class BaseApi(MarketBase):
         except Exception:
             return None  
 
-    #trade
-    def Login(self):
-        pass
-    
     def Buy(self,price,quantity):
         try:
             response = self.restapi.trade(symbol=self.symbol,tradeType='buy',price=price,amount=quantity)

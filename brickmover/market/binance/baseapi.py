@@ -23,10 +23,6 @@ class BaseApi(MarketBase):
     def GetTrades(self):
         pass     
 
-    #trade
-    def Login(self):
-        pass
-    
     def Buy(self,price,quantity):
         response = self.restapi.order_limit_buy(symbol=self.symbol,price=price,quantity=quantity)
         print(response)

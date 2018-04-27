@@ -10,7 +10,8 @@ class BaseApi(MarketBase):
         self.restapi = restapi.Api(key,secret)
         self.symbol = target.upper() + base.upper()
         self.patialid = 0
-        
+
+######################## base api####################        
     #market info
     def GetTicker(self):
         try:
@@ -32,10 +33,6 @@ class BaseApi(MarketBase):
     def GetTrades(self):
         pass     
 
-    #trade
-    def Login(self):
-        pass
-    
     def Buy(self,price,quantity):
         try:
             response = self.restapi.post_order_for_symbol(symbol=self.symbol, side='buy', type="limit", quantity=quantity,price=price, 
@@ -121,7 +118,22 @@ class BaseApi(MarketBase):
         return account  
 
 
-######################################################
+
+####################### Extend API ####################
+    def GetKline(self,period=None,limit=100):
+        response = self.restapi.get_candles_for_symbol(symbol=self.symbol,limit=limit,period=period)
+        for item in response:
+            line={}
+            line['H']= item['max']
+            line['L']= item['min']
+            line['O']= item['open']
+            line['C']= item['close']
+            line['V']= item['volume']
+            line['T']= item['timestamp']
+        return response
+
+
+####################### util #####################
     def sort_and_format(self, l, reverse=False):
         l.sort(key=lambda x: float(x['price']), reverse=reverse)
         r = []
