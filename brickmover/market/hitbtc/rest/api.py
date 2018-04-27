@@ -4,7 +4,10 @@ import requests
 
 
 class Api:
-    def __init__(self, key: str, secret: str, url: str = 'https://api.hitbtc.com/api/2'):
+    def __init__(self, key: str, secret: str):
+        
+        self.apiurl =  'https://api.hitbtc.com/api/2'
+        
         try:
             self.session = requests.session()
             self.session.auth = (key, secret)
@@ -13,7 +16,7 @@ class Api:
         
         self.url = {}
         try:
-            self.url['base'] = url
+            self.url['base'] = self.apiurl
         except Exception as e:
             raise
 
@@ -124,16 +127,6 @@ class Api:
 
         return self.put(locals())
 
-    def new_order(self, client_order_id, symbol_code, side, quantity, price=None):
-        """Place an order."""
-        data = {'symbol': symbol_code, 'side': side, 'quantity': quantity}
-
-        if price is not None:
-            data['price'] = price
-
-        urllll = 'https://api.hitbtc.com/api/2'
-        return self.session.put("%s/order/%s" % (urllll, client_order_id), data=data).json()
-
     def delete_order_by_id(self, clientOrderId: str) -> dict:
         path = '/order/'
         if clientOrderId is None:
@@ -212,14 +205,20 @@ class Api:
 
         if hasattr(self.session, method):
             try:
-                #print("%s%s%s" % (self.url['base'], params['path'], params['endpoint']))
+                thisurl = "%s%s%s" % (self.url['base'], params['path'], params['endpoint'])
+                #print(thisurl)
                 #print('data=%s' % pformat(data))
                 try:
-                    r = getattr(self.session, method)(url="%s%s%s" % (self.url['base'], params['path'], params['endpoint']), params=data).json()
+                    if method in['post','put']: 
+                        r = getattr(self.session, method)(url=thisurl, data=data).json()
+                    else:
+                        r = getattr(self.session, method)(url=thisurl, params=data).json()
                 except Exception as e:
                     raise
                 if 'error' in r:
-                    raise Exception('API Error: %s' % r)
+                    #raise Exception('API Error: %s' % r)
+                    print('API Error:')
+                    print(r)
                 return r
             except Exception as e:
                 raise

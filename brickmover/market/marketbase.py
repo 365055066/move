@@ -12,19 +12,20 @@ class MarketBase(object):
         self.order_size_min = order_size_min
         self.order_size_precision = 1/self.order_size_min
         
-        #self.target_reserved = 0
-        #self.target_available = 0
-        #self.base_reserved = 0
-        #self.base_available = 0
-   
     def GetMarketCode(self):
         return self.marketcode   
    
     #market info
     def GetTicker(self):
+        '''
+        :returns: ticker or None
+        '''
         pass
     
     def GetDepth(self):
+        '''
+        :returns: depth or None
+        '''
         pass    
 
     def GetTrades(self):
@@ -36,29 +37,45 @@ class MarketBase(object):
     
     def Buy(self,price,quantitye):
         '''
-        return: orderid
+        :returns: order id,None if not
         '''
         pass
  
     def Sell(self,price,quantity):
         '''
-        return: orderid
+        :returns: order id, None if not
         '''
         pass
    
     def CancelOrder(self,orderid=None):
         '''
-        return: True or False
+        :returns: True or False
         '''
         pass
 
     def GetOrder(self,orderid=None):
+        '''
+        :returns: orderinfo or None
+                orderinfo['id'] = 
+                orderinfo['price'] 
+                orderinfo['quantity'] 
+                orderinfo['filled'] # filled quantity
+                orderinfo['symbol'] 
+                orderinfo['side']  # buy sell
+                orderinfo['status']  #new, suspended, partiallyFilled, filled, canceled, expired
+        '''
         pass   
 
     def GetOrders(self,orderid=None):
+        '''
+        :returns:orderinfo type {} or None
+        '''
         pass
     
     def GetAccount(self):
+        '''
+        :returns:orderinfo Account {} or None
+        '''
         pass    
 
 

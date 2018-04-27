@@ -13,12 +13,20 @@ class BaseApi(MarketBase):
         
     #market info
     def GetTicker(self):
-        response = self.restapi.get_symbol_ticker(symbol=self.symbol)
+        try:
+            response = self.restapi.get_symbol_ticker(symbol=self.symbol)
+        except Exception:
+            return None
+        
         return {'last':float(response['last'])}
     
     def GetDepth(self):
-        response = self.restapi.get_order_book_for_symbol(symbol=self.symbol,limit=5)
-        depth = self.format_depth(response)
+        try:
+            response = self.restapi.get_order_book_for_symbol(symbol=self.symbol,limit=5)
+            depth = self.format_depth(response)
+        except Exception:
+            return None
+            
         return depth
     
     def GetTrades(self):
@@ -29,42 +37,90 @@ class BaseApi(MarketBase):
         pass
     
     def Buy(self,price,quantity):
-        #response = self.restapi.post_order_for_symbol(symbol=self.symbol, side='buy', type="limit", 
-        #                                              quantity=quantity,price=price, 
-        #                                              clientOrderId=self.genNextCliendid(),   timeInForce = 'GTC')
+        try:
+            response = self.restapi.post_order_for_symbol(symbol=self.symbol, side='buy', type="limit", quantity=quantity,price=price, 
+                                                          #clientOrderId=self.genNextCliendid(), 
+                                                          #timeInForce = 'GTC'
+                                                          )
+        except Exception:
+            return None
         
-        response = self.restapi.new_order(client_order_id=self.genNextCliendid(), symbol_code=self.symbol, side='buy', quantity=quantity, price=price)
-        pprint(response)
+        return response['clientOrderId']
  
     def Sell(self,price,quantity):
-        pass
+        try:
+            response = self.restapi.post_order_for_symbol(symbol=self.symbol, side='sell', type="limit",  quantity=quantity,price=price, 
+                                                          #clientOrderId=self.genNextCliendid(), 
+                                                          #timeInForce = 'GTC'
+                                                          )
+        except Exception :
+            return None
+        
+        return response['clientOrderId']
    
     def CancelOrder(self,orderid=None):
-        response = self.restapi.delete_order_by_id(clientOrderId=orderid)
-        pprint(response)
-
+        try:
+            response = self.restapi.delete_order_by_id(clientOrderId=orderid)
+            if response['clientOrderId'] == orderid and response['status'] == 'canceled':
+                return True
+            else:
+                return False
+        except Exception :
+            return False
+        
+        return False
+        
     def GetOrder(self,orderid=None):
-        pass   
-
-    def GetOrders(self,orderid=None):
-        pass
+        try:
+            response = self.restapi.get_order_by_id(clientOrderId=orderid)
+            orderinfo = {}
+            orderinfo['id'] = response['clientOrderId']
+            orderinfo['price'] = response['price']
+            orderinfo['quantity'] = response['quantity']
+            orderinfo['filled'] = response['cumQuantity']
+            orderinfo['symbol'] = response['symbol']
+            orderinfo['side'] = response['side']
+            orderinfo['status'] = response['status']  #new, suspended, partiallyFilled, filled, canceled, expired
+        except Exception :
+            return None  
+        return orderinfo
+           
+    def GetOrders(self):
+        try:
+            response = self.restapi.get_all_orders_for_symbol(symbol=self.symbol)
+            orderinfos = []
+            for order in response:
+                orderinfo = {}
+                orderinfo['id'] = order['clientOrderId']
+                orderinfo['price'] = order['price']
+                orderinfo['quantity'] = order['quantity']
+                orderinfo['filled'] = order['cumQuantity']
+                orderinfo['symbol'] = order['symbol']
+                orderinfo['side'] = order['side']
+                orderinfo['status'] = order['status']  #new, suspended, partiallyFilled, filled, canceled, expired
+                orderinfos.append(orderinfo)
+        except Exception :
+            return None
+                           
+        return orderinfos
     
     def GetAccount(self):
-        response = self.restapi.get_trading_balance()
-        account = {}
-        for item in response:
-            if item['currency'] == self.target:
-                account[self.target] = {'free':float(item['available']),
-                                        'locked':float(item['reserved'])} 
-            elif item['currency'] == self.base:
-                account[self.base] = {'free':float(item['available']),
-                                      'locked':float(item['reserved'])} 
+        try:
+            response = self.restapi.get_trading_balance()
+            account = {}
+            for item in response:
+                if item['currency'] == self.target:
+                    account[self.target] = {'free':float(item['available']),
+                                            'locked':float(item['reserved'])} 
+                elif item['currency'] == self.base:
+                    account[self.base] = {'free':float(item['available']),
+                                          'locked':float(item['reserved'])} 
+        except Exception :
+            return None
+        
         return account  
 
 
-
-
-    
 ######################################################
     def sort_and_format(self, l, reverse=False):
         l.sort(key=lambda x: float(x['price']), reverse=reverse)
