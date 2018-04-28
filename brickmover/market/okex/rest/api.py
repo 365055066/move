@@ -6,7 +6,7 @@ import hashlib
 class Api:
 
     def __init__(self,apikey='',secretkey=''):
-        self.__url = 'www.okex.com'
+        self.__url = 'https://www.okex.com'
         self.__apikey = apikey
         self.__secretkey = secretkey
 
@@ -133,10 +133,10 @@ class Api:
         return  hashlib.md5(data.encode("utf8")).hexdigest().upper()
     
     def httpGet(self,url,resource,params=''):
-        return self.session.get("%s/%s" % (url,resource), params=params).json()
+        return self.session.get("%s%s" % (url,resource), params=params).json()
 
     def httpPost(self,url,resource,params):
-        return self.session.post("%s/%s" % (url,resource), params=params).json()
+        return self.session.post("%s%s" % (url,resource), params=params).json()
 
 
 
