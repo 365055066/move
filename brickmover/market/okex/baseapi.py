@@ -232,13 +232,11 @@ class BaseApiFuture(MarketBase):
         return None
 
     def CancelOrder(self,orderid=None):
-        #try:
-            response = self.restapi.future_cancel(symbol=self.symbol,contractType=self.contract_type,orderId=orderid)
-            pprint(response)
-        #    return response['result']  
-        #except Exception:
-        #    return False  
-        
+        try:
+            response = self.restapifuture.future_cancel(symbol=self.symbol,contractType=self.contract_type,orderId=orderid)
+            return response['result']  
+        except Exception:
+            return False  
         
     def GetAccount(self):
         try:
