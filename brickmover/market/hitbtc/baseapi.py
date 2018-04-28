@@ -2,7 +2,7 @@ from brickmover.market.marketbase  import MarketBase
 import brickmover.market.hitbtc.rest.api as restapi
 from pprint import pprint
 import time
-
+import logging
 
 class BaseApi(MarketBase):
     def __init__(self,key='',secret='',target='',base='',price_min_move=100000000,order_size_min=100000000):
@@ -16,7 +16,9 @@ class BaseApi(MarketBase):
     def GetTicker(self):
         try:
             response = self.restapi.get_symbol_ticker(symbol=self.symbol)
-        except Exception:
+        except  Exception as e:
+            logging.error(response)
+            logging.error(e)
             return None
         
         return {'last':float(response['last'])}
@@ -25,23 +27,30 @@ class BaseApi(MarketBase):
         try:
             response = self.restapi.get_order_book_for_symbol(symbol=self.symbol,limit=limit)
             depth = self.format_depth(response)
-        except Exception:
+        except  Exception as e:
+            logging.error(response)
+            logging.error(e)
             return None
             
         return depth
     
     def GetTrades(self,limit=5):
-        response = self.restapi.get_trades_for_symbol(symbol=self.symbol,limit=limit)
-        trades = []
-        for item in response:
-                trade = {}
-                trade['price'] = item['price']
-                trade['time'] = item['timestamp']
-                trade['id'] = item['id']
-                trade['side'] =  item['side']
-                trade['quantity'] =  item['quantity']
-                trades.append(trade)
-        return trades     
+        try:
+            response = self.restapi.get_trades_for_symbol(symbol=self.symbol,limit=limit)
+            trades = []
+            for item in response:
+                    trade = {}
+                    trade['price'] = item['price']
+                    trade['time'] = item['timestamp']
+                    trade['id'] = item['id']
+                    trade['side'] =  item['side']
+                    trade['quantity'] =  item['quantity']
+                    trades.append(trade)
+            return trades   
+        except  Exception as e:
+            logging.error(response)
+            logging.error(e)
+            return None       
 
     def Buy(self,price,quantity):
         try:
@@ -49,7 +58,9 @@ class BaseApi(MarketBase):
                                                           #clientOrderId=self.genNextCliendid(), 
                                                           #timeInForce = 'GTC'
                                                           )
-        except Exception:
+        except  Exception as e:
+            logging.error(response)
+            logging.error(e)
             return None
         
         return response['clientOrderId']
@@ -60,7 +71,9 @@ class BaseApi(MarketBase):
                                                           #clientOrderId=self.genNextCliendid(), 
                                                           #timeInForce = 'GTC'
                                                           )
-        except Exception :
+        except  Exception as e:
+            logging.error(response)
+            logging.error(e)
             return None
         
         return response['clientOrderId']
@@ -72,8 +85,10 @@ class BaseApi(MarketBase):
                 return True
             else:
                 return False
-        except Exception :
-            return False
+        except Exception as e:
+            logging.error(response)
+            logging.error(e)
+            return None
         
         return False
         
@@ -88,8 +103,11 @@ class BaseApi(MarketBase):
             orderinfo['symbol'] = response['symbol']
             orderinfo['side'] = response['side']
             orderinfo['status'] = response['status']  #new, suspended, partiallyFilled, filled, canceled, expired
-        except Exception :
-            return None  
+        except  Exception as e:
+            logging.error(response)
+            logging.error(e)
+            return None
+         
         return orderinfo
            
     def GetOrders(self):
@@ -106,7 +124,9 @@ class BaseApi(MarketBase):
                 orderinfo['side'] = order['side']
                 orderinfo['status'] = order['status']  #new, suspended, partiallyFilled, filled, canceled, expired
                 orderinfos.append(orderinfo)
-        except Exception :
+        except  Exception as e:
+            logging.error(response)
+            logging.error(e)
             return None
                            
         return orderinfos
@@ -122,7 +142,9 @@ class BaseApi(MarketBase):
                 elif item['currency'] == self.base:
                     account[self.base] = {'free':float(item['available']),
                                           'locked':float(item['reserved'])} 
-        except Exception :
+        except  Exception as e:
+            logging.error(response)
+            logging.error(e)
             return None
         
         return account  
@@ -131,16 +153,21 @@ class BaseApi(MarketBase):
 
 ####################### Extend API ####################
     def GetKline(self,period=None,limit=100):
-        response = self.restapi.get_candles_for_symbol(symbol=self.symbol,limit=limit,period=period)
-        for item in response:
-            line={}
-            line['H']= item['max']
-            line['L']= item['min']
-            line['O']= item['open']
-            line['C']= item['close']
-            line['V']= item['volume']
-            line['T']= item['timestamp']
-        return response
+        try:
+            response = self.restapi.get_candles_for_symbol(symbol=self.symbol,limit=limit,period=period)
+            for item in response:
+                line={}
+                line['H']= item['max']
+                line['L']= item['min']
+                line['O']= item['open']
+                line['C']= item['close']
+                line['V']= item['volume']
+                line['T']= item['timestamp']
+            return response
+        except Exception as e:
+            logging.error(response)
+            logging.error(e)
+            return None
 
 
 ####################### util #####################

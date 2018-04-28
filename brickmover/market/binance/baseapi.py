@@ -1,5 +1,6 @@
 from brickmover.market.marketbase  import MarketBase
 import brickmover.market.binance.rest.api as restapi
+import logging
 
 class BaseApi(MarketBase):
     def __init__(self,key='',secret='',target='',base='',price_min_move=100000000,order_size_min=100000000):

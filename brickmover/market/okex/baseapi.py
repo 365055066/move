@@ -3,6 +3,7 @@ from brickmover.market.marketbase  import MarketBase
 import brickmover.market.okex.rest.api as restapi
 import brickmover.market.okex.rest.apifuture as restapifuture
 from pprint import pprint
+import logging
 
 def sort_and_format(l, reverse=False):
         l.sort(key=lambda x: float(x[0]), reverse=reverse)
@@ -39,15 +40,20 @@ class BaseApi(MarketBase):
             response = self.restapi.ticker(symbol=self.symbol)
             ticker = response['ticker']
             return {'last':ticker['last']}
-        except Exception:
+        except Exception as e:
+            logging.error(response)
+            logging.error(e)
             return None
 
     def GetDepth(self,limit=5):
         try:
             response = self.restapi.depth(symbol=self.symbol,size=limit)
             depth = format_depth(response)
-        except Exception:
+        except Exception as e:
+            logging.error(response)
+            logging.error(e)
             return None
+        
         return  depth 
 
     def GetTrades(self):
@@ -63,8 +69,10 @@ class BaseApi(MarketBase):
                 trade['quantity'] =  item['amount']
                 trades.append(trade)
             return trades   
-        except Exception:
-            return None  
+        except Exception as e:
+            logging.error(response)
+            logging.error(e)
+            return None
 
     def Buy(self,price,quantity):
         try:
@@ -72,7 +80,9 @@ class BaseApi(MarketBase):
             order_id = -1
             order_id = response['order_id']
             return order_id
-        except Exception:
+        except Exception as e:
+            logging.error(response)
+            logging.error(e)
             return None
      
     def Sell(self,price,quantity):
@@ -81,7 +91,9 @@ class BaseApi(MarketBase):
             order_id = -1
             order_id = response['order_id']
             return order_id
-        except Exception:
+        except Exception as e:
+            logging.error(response)
+            logging.error(e)
             return None
         
 
@@ -89,8 +101,10 @@ class BaseApi(MarketBase):
         try:
             response = self.restapi.cancelOrder(symbol=self.symbol,orderId=orderid)
             return response['result']  
-        except Exception:
-            return False  
+        except Exception as e:
+            logging.error(response)
+            logging.error(e)
+            return None 
 
     def GetOrder(self,orderid=None):
         try:
@@ -107,8 +121,10 @@ class BaseApi(MarketBase):
                     orderinfo['side'] = order['type']  
                     orderinfo['status'] = ORDER_STATUS_MAP[order['status']]        
             return orderinfo
-        except Exception:
-            return None 
+        except Exception as e:
+            logging.error(response)
+            logging.error(e)
+            return None
         
     def GetOrders(self):
         try:
@@ -126,8 +142,10 @@ class BaseApi(MarketBase):
                 orderinfo['status'] = ORDER_STATUS_MAP[order['status']]
                 orderinfos.append(orderinfo)
             return orderinfos
-        except Exception:
-            return None 
+        except Exception as e:
+            logging.error(response)
+            logging.error(e)
+            return None
         
     def GetAccount(self):
         try:
@@ -143,8 +161,10 @@ class BaseApi(MarketBase):
                                     'locked':float(freezed[self.base.lower()])} 
             
             return account 
-        except Exception:
-            return None    
+        except Exception as e:
+            logging.error(response)
+            logging.error(e)
+            return None  
 
 
 
@@ -168,15 +188,20 @@ class BaseApiFuture(MarketBase):
         try:
             response = self.restapifuture.future_ticker(symbol=self.symbol,contractType=self.contract_type)
             return {'last':response['ticker']['last']}
-        except Exception:
+        except Exception as e:
+            logging.error(response)
+            logging.error(e)
             return None
             
     def GetDepth(self,limit=5):
         try:
             response = self.restapifuture.future_depth(symbol=self.symbol,contractType=self.contract_type, size=limit)
             depth = format_depth(response)
-        except Exception:
+        except  Exception as e:
+            logging.error(response)
+            logging.error(e)
             return None
+    
         return  depth         
 
 
@@ -194,49 +219,111 @@ class BaseApiFuture(MarketBase):
                 trade['quantity'] =  item['amount']
                 trades.append(trade)
                 return trades   
-        except Exception:
-            return None   
+        except Exception as e:
+            logging.error(response)
+            logging.error(e)
+            return None
         
     def Long(self,price,quantity):
-        response =  self.restapifuture.future_trade(symbol=self.symbol,contractType=self.contract_type,
-                                                    price=price,amount=quantity,tradeType='1',matchPrice='0')
-        print(response)
-        
-        pass
+        try:
+            response =  self.restapifuture.future_trade(symbol=self.symbol,contractType=self.contract_type,
+                                                        price=price,amount=quantity,tradeType='1',matchPrice='0')
+            return response['order_id']
+        except Exception as e:
+            logging.error(response)
+            logging.error(e)
+            return None
 
-    def CloseLong(self,orderid=None):
-        pass
+    def CloseLong(self,price,quantity):
+        try:
+            response =  self.restapifuture.future_trade(symbol=self.symbol,contractType=self.contract_type,
+                                                        price=price,amount=quantity,tradeType='3',matchPrice='0')
+            return response['order_id']
+        except Exception as e:
+            logging.error(response)
+            logging.error(e)
+            return None
     
     def Short(self,price,quantity):
-        pass
+        try:
+            response =  self.restapifuture.future_trade(symbol=self.symbol,contractType=self.contract_type,
+                                                        price=price,amount=quantity,tradeType='2',matchPrice='0')
+            return response['order_id']
+        except Exception as e:
+            logging.error(response)
+            logging.error(e)
+            return None
 
-    def CloseShort(self,orderid=None):
-        pass
+    def CloseShort(self,price,quantity):
+        try:
+            response =  self.restapifuture.future_trade(symbol=self.symbol,contractType=self.contract_type,
+                                                        price=price,amount=quantity,tradeType='4',matchPrice='0')
+            return response['order_id']
+        except Exception as e:
+            logging.error(response)
+            logging.error(e)
+            return None
 
 
     def GetOrder(self,orderid=None):
-        response =  self.restapifuture.future_orderinfo(symbol=self.symbol,contractType=self.contract_type,orderId=orderid)
-        orders = response['orders']
-        pprint(orders)
-        for order in orders:
-                if str(order['order_id']) == orderid:
+        try:
+            response =  self.restapifuture.future_orderinfo(symbol=self.symbol,contractType=self.contract_type,orderId=orderid)
+            orders = response['orders']
+            pprint(orders)
+            for order in orders:
+                    if str(order['order_id']) == orderid:
+                        orderinfo = {}
+                        orderinfo['id'] = order['order_id']
+                        orderinfo['price'] = order['price']
+                        orderinfo['quantity'] = order['amount']
+                        orderinfo['filled'] = order['deal_amount']
+                        orderinfo['symbol'] = order['symbol']
+                        orderinfo['side'] = self.FUTURE_ORDER_SIDE_MAP[order['type']]  
+                        orderinfo['status'] = ORDER_STATUS_MAP[order['status']]        
+                        return orderinfo
+            return None
+        except Exception as e:
+            logging.error(response)
+            logging.error(e)
+            return None
+
+    def GetOrders(self):
+        try:
+            currentPage = 1
+            orderinfos = []
+            while True:
+                response =  self.restapifuture.future_orderinfo(symbol=self.symbol,contractType=self.contract_type,orderId=-1,status=1,currentPage=1,pageLength=50)
+                orders = response['orders']
+                for order in orders:
                     orderinfo = {}
                     orderinfo['id'] = order['order_id']
                     orderinfo['price'] = order['price']
                     orderinfo['quantity'] = order['amount']
                     orderinfo['filled'] = order['deal_amount']
                     orderinfo['symbol'] = order['symbol']
-                    orderinfo['side'] = self.FUTURE_ORDER_SIDE_MAP[order['type']]  
-                    orderinfo['status'] = ORDER_STATUS_MAP[order['status']]        
-                    return orderinfo
-        return None
+                    orderinfo['side'] = order['type']  
+                    orderinfo['status'] = ORDER_STATUS_MAP[order['status']]
+                    orderinfos.append(orderinfo)
+                if len(orders) < 50:
+                    break   
+                else:
+                    currentPage +=1
+                    
+            return orderinfos
+        except Exception as e:
+            logging.error(response)
+            logging.error(e)
+            return None
+
 
     def CancelOrder(self,orderid=None):
         try:
             response = self.restapifuture.future_cancel(symbol=self.symbol,contractType=self.contract_type,orderId=orderid)
             return response['result']  
-        except Exception:
-            return False  
+        except  Exception as e:
+            logging.error(response)
+            logging.error(e)
+            return None
         
     def GetAccount(self):
         try:
@@ -247,6 +334,11 @@ class BaseApiFuture(MarketBase):
             # rights:È¨Òæ
             # 'contracts': [...]
             return account 
-        except Exception:
-            return None      
-                       
+        except  Exception as e:
+            logging.error(response)
+            logging.error(e)
+            return None
+        
+        
+        
+        
