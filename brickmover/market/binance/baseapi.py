@@ -24,12 +24,12 @@ class BaseApi(MarketBase):
     def GetTrades(self,limit=5):
         pass     
 
-    def Buy(self,price,quantity):
+    def Long(self,price,quantity):
         response = self.restapi.order_limit_buy(symbol=self.symbol,price=price,quantity=quantity)
         print(response)
         pass
  
-    def Sell(self,price,quantity):
+    def CloseLong(self,price,quantity):
         pass
    
     def CancelOrder(self,orderid=None):

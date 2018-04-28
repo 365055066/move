@@ -32,13 +32,13 @@ class MarketBase(object):
     def GetTrades(self,limit=5):
         pass     
 
-    def Buy(self,price,quantity):
+    def Long(self,price,quantity):
         '''
         :returns: order id,None if not
         '''
         pass
  
-    def Sell(self,price,quantity):
+    def CloseLong(self,price,quantity):
         '''
         :returns: order id, None if not
         '''

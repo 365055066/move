@@ -52,7 +52,7 @@ class BaseApi(MarketBase):
             logging.error(e)
             return None       
 
-    def Buy(self,price,quantity):
+    def Long(self,price,quantity):
         try:
             response = self.restapi.post_order_for_symbol(symbol=self.symbol, side='buy', type="limit", quantity=quantity,price=price, 
                                                           #clientOrderId=self.genNextCliendid(), 
@@ -65,7 +65,7 @@ class BaseApi(MarketBase):
         
         return response['clientOrderId']
  
-    def Sell(self,price,quantity):
+    def CloseLong(self,price,quantity):
         try:
             response = self.restapi.post_order_for_symbol(symbol=self.symbol, side='sell', type="limit",  quantity=quantity,price=price, 
                                                           #clientOrderId=self.genNextCliendid(), 

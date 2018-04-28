@@ -74,7 +74,7 @@ class BaseApi(MarketBase):
             logging.error(e)
             return None
 
-    def Buy(self,price,quantity):
+    def Long(self,price,quantity):
         try:
             response = self.restapi.trade(symbol=self.symbol,tradeType='buy',price=price,amount=quantity)
             order_id = -1
@@ -85,7 +85,7 @@ class BaseApi(MarketBase):
             logging.error(e)
             return None
      
-    def Sell(self,price,quantity):
+    def CloseLong(self,price,quantity):
         try:
             response = self.restapi.trade(symbol=self.symbol,tradeType='sell',price=price,amount=quantity)
             order_id = -1
