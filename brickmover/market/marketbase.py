@@ -1,11 +1,12 @@
 
 
 class MarketBase(object):
-    def __init__(self,exchange,target,base,price_min_move=100000000,order_size_min=100000000):
+    def __init__(self,exchange='',target='',base='', contract_type=None, price_min_move=100000000,order_size_min=100000000):
         self.exchange = exchange
         self.target = target
         self.base = base
-        self.marketcode = self.exchange+ self.target +self.base
+        self.contract_type = contract_type
+        self.marketcode = "%s%s%s%s" % (self.exchange, self.target, self.base, contract_type)  
         
         self.price_min_move = price_min_move
         self.price_precision = 1/self.price_min_move
@@ -22,16 +23,16 @@ class MarketBase(object):
         '''
         pass
     
-    def GetDepth(self):
+    def GetDepth(self,limit=5):
         '''
         :returns: depth or None
         '''
         pass    
 
-    def GetTrades(self):
+    def GetTrades(self,limit=5):
         pass     
 
-    def Buy(self,price,quantitye):
+    def Buy(self,price,quantity):
         '''
         :returns: order id,None if not
         '''

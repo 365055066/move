@@ -3,7 +3,7 @@ import brickmover.market.binance.rest.api as restapi
 
 class BaseApi(MarketBase):
     def __init__(self,key='',secret='',target='',base='',price_min_move=100000000,order_size_min=100000000):
-        super(BaseApi, self).__init__('binance',target.upper(),base.upper(),price_min_move,order_size_min)  
+        super(BaseApi, self).__init__('binance',target=target.upper(),base=base.upper(),price_min_move=price_min_move,order_size_min=order_size_min)  
         self.restapi = restapi.Api(key,secret)
         self.symbol = target.upper() + base.upper()
  
@@ -14,13 +14,13 @@ class BaseApi(MarketBase):
         return {'last':float(response['price'])}
         pass
     
-    def GetDepth(self):
-        response = self.restapi.get_order_book(symbol=self.symbol,limit=5)
+    def GetDepth(self,limit=5):
+        response = self.restapi.get_order_book(symbol=self.symbol,limit=limit)
         #print(response)
         return self.format_depth(response)
         pass    
 
-    def GetTrades(self):
+    def GetTrades(self,limit=5):
         pass     
 
     def Buy(self,price,quantity):

@@ -6,7 +6,7 @@ import time
 
 class BaseApi(MarketBase):
     def __init__(self,key='',secret='',target='',base='',price_min_move=100000000,order_size_min=100000000):
-        super(BaseApi, self).__init__('hitbtc',target.upper(),base.upper(),price_min_move,order_size_min)  
+        super(BaseApi, self).__init__('hitbtc',target=target.upper(),base=base.upper(),price_min_move=price_min_move,order_size_min=order_size_min)  
         self.restapi = restapi.Api(key,secret)
         self.symbol = target.upper() + base.upper()
         self.patialid = 0
@@ -21,17 +21,27 @@ class BaseApi(MarketBase):
         
         return {'last':float(response['last'])}
     
-    def GetDepth(self):
+    def GetDepth(self,limit=5):
         try:
-            response = self.restapi.get_order_book_for_symbol(symbol=self.symbol,limit=5)
+            response = self.restapi.get_order_book_for_symbol(symbol=self.symbol,limit=limit)
             depth = self.format_depth(response)
         except Exception:
             return None
             
         return depth
     
-    def GetTrades(self):
-        pass     
+    def GetTrades(self,limit=5):
+        response = self.restapi.get_trades_for_symbol(symbol=self.symbol,limit=limit)
+        trades = []
+        for item in response:
+                trade = {}
+                trade['price'] = item['price']
+                trade['time'] = item['timestamp']
+                trade['id'] = item['id']
+                trade['side'] =  item['side']
+                trade['quantity'] =  item['quantity']
+                trades.append(trade)
+        return trades     
 
     def Buy(self,price,quantity):
         try:

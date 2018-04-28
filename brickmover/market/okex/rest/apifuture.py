@@ -5,8 +5,8 @@ from brickmover.market.okex.rest.httpmd5util  import buildMySign,httpGet,httpPos
 
 class Apifuture:
 
-    def __init__(self,url,apikey,secretkey):
-        self.__url = url
+    def __init__(self, apikey,secretkey):
+        self.__url = 'www.okex.com'
         self.__apikey = apikey
         self.__secretkey = secretkey
 
@@ -29,7 +29,7 @@ class Apifuture:
         if contractType:
             params += '&contract_type=' + contractType if params else 'contract_type=' +symbol
         if size:
-            params += '&size=' + size if params else 'size=' + size
+            params += '&size=' + str(size) if params else 'size=' + str(size)
         return httpGet(self.__url,FUTURE_DEPTH_RESOURCE,params)
 
     #OKCoin期货交易记录信息
@@ -83,7 +83,9 @@ class Apifuture:
         return httpPost(self.__url,FUTURE_POSITION,params)
 
     #期货下单
-    def future_trade(self,symbol,contractType,price='',amount='',tradeType='',matchPrice='',leverRate=''):
+    def future_trade(self,symbol,contractType,price='',amount='',tradeType=None,matchPrice='0',
+                     #leverRate='10'
+                     ):
         FUTURE_TRADE = "/api/v1/future_trade.do?"
         params = {
             'api_key':self.__apikey,
@@ -92,7 +94,7 @@ class Apifuture:
             'amount':amount,
             'type':tradeType,
             'match_price':matchPrice,
-            'lever_rate':leverRate
+            #'lever_rate':leverRate
         }
         if price:
             params['price'] = price
@@ -125,17 +127,24 @@ class Apifuture:
         return httpPost(self.__url,FUTURE_CANCEL,params)
 
     #期货获取订单信息
-    def future_orderinfo(self,symbol,contractType,orderId,status,currentPage,pageLength):
+    def future_orderinfo(self,symbol,contractType,orderId,status=None,currentPage=None,pageLength=None):
         FUTURE_ORDERINFO = "/api/v1/future_order_info.do?"
         params = {
             'api_key':self.__apikey,
             'symbol':symbol,
             'contract_type':contractType,
             'order_id':orderId,
-            'status':status,
-            'current_page':currentPage,
-            'page_length':pageLength
         }
+        
+        if status:
+            params['status']= status
+        
+        if currentPage:
+            params['current_page']= currentPage
+        
+        if pageLength:
+            params['page_length']= pageLength  
+        
         params['sign'] = buildMySign(params,self.__secretkey)
         return httpPost(self.__url,FUTURE_ORDERINFO,params)
 
