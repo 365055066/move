@@ -99,7 +99,6 @@ class BaseApi(MarketBase):
     def GetOrders(self):
         try:
             response = self.restapi.orderinfo(symbol=self.symbol,orderId=-1)
-            pprint(response)
             orderinfos = []
             orders = response['orders']
             for order in orders:
