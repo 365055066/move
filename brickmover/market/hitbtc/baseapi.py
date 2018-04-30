@@ -14,6 +14,7 @@ class BaseApi(MarketBase):
 ######################## base api####################        
     #market info
     def GetTicker(self):
+        response=None
         try:
             response = self.restapi.get_symbol_ticker(symbol=self.symbol)
         except  Exception as e:
@@ -24,6 +25,7 @@ class BaseApi(MarketBase):
         return {'last':float(response['last'])}
     
     def GetDepth(self,limit=5):
+        response=None
         try:
             response = self.restapi.get_order_book_for_symbol(symbol=self.symbol,limit=limit)
             depth = self.format_depth(response)
@@ -35,6 +37,7 @@ class BaseApi(MarketBase):
         return depth
     
     def GetTrades(self,limit=5):
+        response=None
         try:
             response = self.restapi.get_trades_for_symbol(symbol=self.symbol,limit=limit)
             trades = []
@@ -52,7 +55,8 @@ class BaseApi(MarketBase):
             logging.error(e)
             return None       
 
-    def Long(self,price,quantity):
+    def Buy(self,price,quantity):
+        response=None
         try:
             response = self.restapi.post_order_for_symbol(symbol=self.symbol, side='buy', type="limit", quantity=quantity,price=price, 
                                                           #clientOrderId=self.genNextCliendid(), 
@@ -65,7 +69,8 @@ class BaseApi(MarketBase):
         
         return response['clientOrderId']
  
-    def CloseLong(self,price,quantity):
+    def Sell(self,price,quantity):
+        response=None
         try:
             response = self.restapi.post_order_for_symbol(symbol=self.symbol, side='sell', type="limit",  quantity=quantity,price=price, 
                                                           #clientOrderId=self.genNextCliendid(), 
@@ -79,6 +84,7 @@ class BaseApi(MarketBase):
         return response['clientOrderId']
    
     def CancelOrder(self,orderid=None):
+        response=None
         try:
             response = self.restapi.delete_order_by_id(clientOrderId=orderid)
             if response['clientOrderId'] == orderid and response['status'] == 'canceled':
@@ -93,6 +99,7 @@ class BaseApi(MarketBase):
         return False
         
     def GetOrder(self,orderid=None):
+        response=None
         try:
             response = self.restapi.get_order_by_id(clientOrderId=orderid)
             orderinfo = {}
@@ -111,6 +118,7 @@ class BaseApi(MarketBase):
         return orderinfo
            
     def GetOrders(self):
+        response=None
         try:
             response = self.restapi.get_all_orders_for_symbol(symbol=self.symbol)
             orderinfos = []
@@ -132,6 +140,7 @@ class BaseApi(MarketBase):
         return orderinfos
     
     def GetAccount(self):
+        response=None
         try:
             response = self.restapi.get_trading_balance()
             account = {}
@@ -153,6 +162,7 @@ class BaseApi(MarketBase):
 
 ####################### Extend API ####################
     def GetKline(self,period=None,limit=100):
+        response=None
         try:
             response = self.restapi.get_candles_for_symbol(symbol=self.symbol,limit=limit,period=period)
             for item in response:

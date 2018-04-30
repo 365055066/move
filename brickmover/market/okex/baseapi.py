@@ -36,6 +36,7 @@ class BaseApi(MarketBase):
 
     #market info
     def GetTicker(self):
+        response=None
         try: 
             response = self.restapi.ticker(symbol=self.symbol)
             ticker = response['ticker']
@@ -46,6 +47,7 @@ class BaseApi(MarketBase):
             return None
 
     def GetDepth(self,limit=5):
+        response=None
         try:
             response = self.restapi.depth(symbol=self.symbol,size=limit)
             depth = format_depth(response)
@@ -57,6 +59,7 @@ class BaseApi(MarketBase):
         return  depth 
 
     def GetTrades(self):
+        response=None
         try:
             response = self.restapi.trades(symbol=self.symbol)
             trades = []
@@ -74,7 +77,8 @@ class BaseApi(MarketBase):
             logging.error(e)
             return None
 
-    def Long(self,price,quantity):
+    def Buy(self,price,quantity):
+        response=None
         try:
             response = self.restapi.trade(symbol=self.symbol,tradeType='buy',price=price,amount=quantity)
             order_id = -1
@@ -85,7 +89,8 @@ class BaseApi(MarketBase):
             logging.error(e)
             return None
      
-    def CloseLong(self,price,quantity):
+    def Sell(self,price,quantity):
+        response=None
         try:
             response = self.restapi.trade(symbol=self.symbol,tradeType='sell',price=price,amount=quantity)
             order_id = -1
@@ -98,6 +103,7 @@ class BaseApi(MarketBase):
         
 
     def CancelOrder(self,orderid=None):
+        response=None
         try:
             response = self.restapi.cancelOrder(symbol=self.symbol,orderId=orderid)
             return response['result']  
@@ -107,6 +113,7 @@ class BaseApi(MarketBase):
             return None 
 
     def GetOrder(self,orderid=None):
+        response=None
         try:
             response = self.restapi.orderinfo(symbol=self.symbol,orderId=orderid)
             orders = response['orders']
@@ -127,6 +134,7 @@ class BaseApi(MarketBase):
             return None
         
     def GetOrders(self):
+        response=None
         try:
             response = self.restapi.orderinfo(symbol=self.symbol,orderId=-1)
             orderinfos = []
@@ -148,6 +156,7 @@ class BaseApi(MarketBase):
             return None
         
     def GetAccount(self):
+        response=None
         try:
             response = self.restapi.userinfo()
             funds = response['info']['funds']
@@ -185,6 +194,7 @@ class BaseApiFuture(MarketBase):
         self.contract_type = contract_type
     
     def GetTicker(self):
+        response=None
         try:
             response = self.restapifuture.future_ticker(symbol=self.symbol,contractType=self.contract_type)
             return {'last':response['ticker']['last']}
@@ -194,6 +204,7 @@ class BaseApiFuture(MarketBase):
             return None
             
     def GetDepth(self,limit=5):
+        response=None
         try:
             response = self.restapifuture.future_depth(symbol=self.symbol,contractType=self.contract_type, size=limit)
             depth = format_depth(response)
@@ -206,6 +217,7 @@ class BaseApiFuture(MarketBase):
 
 
     def GetTrades(self):
+        response=None
         try:
             response =  self.restapifuture.future_trades(symbol=self.symbol,contractType=self.contract_type)   
             pprint(response)
@@ -225,6 +237,7 @@ class BaseApiFuture(MarketBase):
             return None
         
     def Long(self,price,quantity):
+        response=None
         try:
             response =  self.restapifuture.future_trade(symbol=self.symbol,contractType=self.contract_type,
                                                         price=price,amount=quantity,tradeType='1',matchPrice='0')
@@ -235,6 +248,7 @@ class BaseApiFuture(MarketBase):
             return None
 
     def CloseLong(self,price,quantity):
+        response=None
         try:
             response =  self.restapifuture.future_trade(symbol=self.symbol,contractType=self.contract_type,
                                                         price=price,amount=quantity,tradeType='3',matchPrice='0')
@@ -245,6 +259,7 @@ class BaseApiFuture(MarketBase):
             return None
     
     def Short(self,price,quantity):
+        response=None
         try:
             response =  self.restapifuture.future_trade(symbol=self.symbol,contractType=self.contract_type,
                                                         price=price,amount=quantity,tradeType='2',matchPrice='0')
@@ -255,6 +270,7 @@ class BaseApiFuture(MarketBase):
             return None
 
     def CloseShort(self,price,quantity):
+        response=None
         try:
             response =  self.restapifuture.future_trade(symbol=self.symbol,contractType=self.contract_type,
                                                         price=price,amount=quantity,tradeType='4',matchPrice='0')
@@ -266,6 +282,7 @@ class BaseApiFuture(MarketBase):
 
 
     def GetOrder(self,orderid=None):
+        response=None
         try:
             response =  self.restapifuture.future_orderinfo(symbol=self.symbol,contractType=self.contract_type,orderId=orderid)
             orders = response['orders']
@@ -288,6 +305,7 @@ class BaseApiFuture(MarketBase):
             return None
 
     def GetOrders(self):
+        response=None
         try:
             currentPage = 1
             orderinfos = []
@@ -317,6 +335,7 @@ class BaseApiFuture(MarketBase):
 
 
     def CancelOrder(self,orderid=None):
+        response=None
         try:
             response = self.restapifuture.future_cancel(symbol=self.symbol,contractType=self.contract_type,orderId=orderid)
             return response['result']  
@@ -326,6 +345,7 @@ class BaseApiFuture(MarketBase):
             return None
         
     def GetAccount(self):
+        response=None
         try:
             response = self.restapifuture.future_userinfo_4fix()
             info = response['info']

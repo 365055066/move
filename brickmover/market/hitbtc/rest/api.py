@@ -1,7 +1,7 @@
 from pprint import pformat
 
 import requests
-
+import logging
 
 class Api:
     def __init__(self, key: str, secret: str):
@@ -214,11 +214,12 @@ class Api:
                     else:
                         r = getattr(self.session, method)(url=thisurl, params=data).json()
                 except Exception as e:
+                    logging.info(e)
                     raise
                 if 'error' in r:
                     #raise Exception('API Error: %s' % r)
-                    print('API Error:')
-                    print(r)
+                    logging.info('API Error:')
+                    logging.info(r)
                 return r
             except Exception as e:
                 raise

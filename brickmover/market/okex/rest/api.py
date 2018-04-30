@@ -2,6 +2,7 @@
 #from brickmover.market.okex.rest.httpmd5util   import buildMySign,httpGet,httpPost
 import requests
 import hashlib
+import logging
 
 class Api:
 
@@ -133,12 +134,20 @@ class Api:
         return  hashlib.md5(data.encode("utf8")).hexdigest().upper()
     
     def httpGet(self,url,resource,params=''):
-        return self.session.get("%s%s" % (url,resource), params=params).json()
-
+        try:
+            r = self.session.get("%s%s" % (url,resource), params=params).json()
+        except Exception as e:
+            logging.info(e)
+            
+        return r
+            
     def httpPost(self,url,resource,params):
-        return self.session.post("%s%s" % (url,resource), params=params).json()
-
-
+        try:
+            r= self.session.post("%s%s" % (url,resource), params=params).json()
+        except Exception as e:
+            logging.info(e)
+            
+        return r
 
 
 
