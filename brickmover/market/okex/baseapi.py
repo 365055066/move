@@ -387,12 +387,19 @@ class BaseApiFuture(MarketBase):
             response =  self.restapifuture.future_position_4fix(symbol=self.symbol,contractType=self.contract_type,type1=1)
             holding=response['holding']
             position = {}
+            
+            position['long_position'] = 0
+            position['long_available'] = 0
+            position['long_average_price'] = -1  
+            position['short_position'] = 0
+            position['short_available'] = 0
+            position['short_average_price'] = -1
+            
             symbol = self.symbol
             if self.base.lower() == 'usdt':
                 symbol = self.target.lower() + '_usd'
             for item in holding:
-                if item['symbol'] == symbol:
-                    
+                if item['symbol'] == symbol: 
                     position['long_position'] = item['buy_amount']
                     position['long_available'] = item['buy_available']
                     position['long_average_price'] = item['buy_price_avg']  
