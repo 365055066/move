@@ -4,6 +4,7 @@ import brickmover.market.okex.rest.api as restapi
 import brickmover.market.okex.rest.apifuture as restapifuture
 from pprint import pprint
 import logging
+import dateparser
 
 def sort_and_format(l, reverse=False):
         l.sort(key=lambda x: float(x[0]), reverse=reverse)
@@ -359,6 +360,51 @@ class BaseApiFuture(MarketBase):
             logging.error(e)
             return None
         
+    ######################
+    def GetKline(self,period,limit=0):
+        PERIOD_MAP = {'M1':'1min', 'M3':'3min', 'M5':'5min', 'M15':'15min', 'M30':'30min', 
+                      'H1':'1hour', 'H4':'4hour','H6':'6hour', 'H12':'12hour', 'D1':'D1', 'D7':'D7', "1M":"1M"}
+        lines=[]
+        try:
+            response =  self.restapifuture.future_kline(symbol=self.symbol,contractType=self.contract_type,period=PERIOD_MAP[period],size=limit)   
+            for item in response:
+                    line={}
+                    line['T']= item[0]#dateparser.parse(str(item[0]))
+                    line['O']= item[1]
+                    line['H']= item[2]
+                    line['L']= item[3]
+                    line['C']= item[4]
+                    line['V']= item[5]
+                    lines.append(line)
+            return lines
+        except Exception as e:
+            logging.error(response)
+            logging.error(e)
+            return None        
+       
+    def GetPosition(self):  
+        try:
+            response =  self.restapifuture.future_position_4fix(symbol=self.symbol,contractType=self.contract_type,type1=1)
+            holding=response['holding']
+            position = {}
+            symbol = self.symbol
+            if self.base.lower() == 'usdt':
+                symbol = self.target.lower() + '_usd'
+            for item in holding:
+                if item['symbol'] == symbol:
+                    
+                    position['long_position'] = item['buy_amount']
+                    position['long_available'] = item['buy_available']
+                    position['long_average_price'] = item['buy_price_avg']  
+                    position['short_position'] = item['sell_amount']
+                    position['short_available'] = item['sell_available']
+                    position['short_average_price'] = item['sell_price_avg']
+            return position
+        
+        except Exception as e:
+            logging.error(response)
+            logging.error(e)
+            return None     
         
         
         

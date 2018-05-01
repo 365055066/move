@@ -162,7 +162,9 @@ class BaseApi(MarketBase):
 
 ####################### Extend API ####################
     def GetKline(self,period=None,limit=100):
+        #period One of: M1 (one minute), M3, M5, M15, M30, H1, H4, D1, D7, 1M
         response=None
+        lines=[]
         try:
             response = self.restapi.get_candles_for_symbol(symbol=self.symbol,limit=limit,period=period)
             for item in response:
@@ -173,6 +175,7 @@ class BaseApi(MarketBase):
                 line['C']= item['close']
                 line['V']= item['volume']
                 line['T']= item['timestamp']
+                lines.append(line)
             return response
         except Exception as e:
             logging.error(response)

@@ -18,6 +18,9 @@ class Apifuture:
             params += '&symbol=' + symbol if params else 'symbol=' +symbol
         if contractType:
             params += '&contract_type=' + contractType if params else 'contract_type=' +symbol
+            
+        print(params)
+        
         return httpGet(self.__url,FUTURE_TICKER_RESOURCE,params)
 
     #OKCoin期货市场深度信息
@@ -31,6 +34,17 @@ class Apifuture:
         if size:
             params += '&size=' + str(size) if params else 'size=' + str(size)
         return httpGet(self.__url,FUTURE_DEPTH_RESOURCE,params)
+
+    def future_kline(self,symbol,contractType,period,size=0,since=0):
+        FUTURE_KLINE_RESOURCE = "/api/v1/future_kline.do"
+        params = 'symbol='+symbol
+        params += '&contract_type='+contractType
+        params += '&type='+period
+        if size!=0:
+            params += '&size=' + str(size)
+        if since!=0:
+            params += '&since=' + str(since)    
+        return httpGet(self.__url,FUTURE_KLINE_RESOURCE,params)
 
     #OKCoin期货交易记录信息
     def future_trades(self,symbol,contractType):
@@ -156,7 +170,7 @@ class Apifuture:
         return httpPost(self.__url,FUTURE_INFO_4FIX,params)
 
     #期货逐仓持仓信息
-    def future_position_4fix(self,symbol,contractType,type1):
+    def future_position_4fix(self,symbol,contractType,type1=1):
         FUTURE_POSITION_4FIX = "/api/v1/future_position_4fix.do?"
         params = {
             'api_key':self.__apikey,
@@ -166,7 +180,6 @@ class Apifuture:
         }
         params['sign'] = buildMySign(params,self.__secretkey)
         return httpPost(self.__url,FUTURE_POSITION_4FIX,params)
-
 
 
 
