@@ -1,7 +1,7 @@
 
 
 class MarketBase(object):
-    def __init__(self,exchange='',target='',base='', contract_type=None, price_min_move=100000000,order_size_min=100000000):
+    def __init__(self,exchange='',target='',base='', contract_type=None, price_min_move=0.00000001,order_size_min=0.00000001):
         self.exchange = exchange
         self.target = target
         self.base = base
@@ -9,9 +9,7 @@ class MarketBase(object):
         self.marketcode = "%s%s%s%s" % (self.exchange, self.target, self.base, contract_type)  
         
         self.price_min_move = price_min_move
-        self.price_precision = 1/self.price_min_move
         self.order_size_min = order_size_min
-        self.order_size_precision = 1/self.order_size_min
         
     def GetMarketCode(self):
         return self.marketcode   

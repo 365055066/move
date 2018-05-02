@@ -3,7 +3,7 @@ import brickmover.market.binance.rest.api as restapi
 import logging
 
 class BaseApi(MarketBase):
-    def __init__(self,key='',secret='',target='',base='',price_min_move=100000000,order_size_min=100000000):
+    def __init__(self,key='',secret='',target='',base='',price_min_move=0.00000001,order_size_min=0.00000001):
         super(BaseApi, self).__init__('binance',target=target.upper(),base=base.upper(),price_min_move=price_min_move,order_size_min=order_size_min)  
         self.restapi = restapi.Api(key,secret)
         self.symbol = target.upper() + base.upper()

@@ -30,7 +30,7 @@ ORDER_STATUS_MAP= {-1:'canceled',
 class BaseApi(MarketBase):
     
 
-    def __init__(self,key='',secret='',target='',base='',price_min_move=100000000,order_size_min=100000000):
+    def __init__(self,key='',secret='',target='',base='',price_min_move=0.00000001,order_size_min=0.00000001):
         super(BaseApi, self).__init__(exchange='okex',target=target.upper(),base=base.upper(),price_min_move=price_min_move,order_size_min=order_size_min)  
         self.restapi = restapi.Api(apikey=key,secretkey=secret)
         self.symbol = target.lower() + '_' + base.lower()
@@ -185,7 +185,7 @@ class BaseApiFuture(MarketBase):
     FUTURE_ORDER_SIDE_MAP = {1:'long',2:'short',3:'close-long',4:'close-short'}
     
     
-    def __init__(self,key='',secret='',target='',base='',contract_type=None,price_min_move=100000000,order_size_min=100000000):
+    def __init__(self,key='',secret='',target='',base='',contract_type=None,price_min_move=0.00000001,order_size_min=0.00000001):
         '''
         :contractType this_week , next_week , quarter 
         '''
@@ -354,6 +354,8 @@ class BaseApiFuture(MarketBase):
             # balance:”‡∂Ó
             # rights:»®“Ê
             # 'contracts': [...]
+            
+            
             return account 
         except  Exception as e:
             logging.error(response)
