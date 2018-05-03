@@ -386,7 +386,7 @@ class BaseApiFuture(MarketBase):
        
     def GetPosition(self):  
         try:
-            response =  self.restapifuture.future_position_4fix(symbol=self.symbol,contractType=self.contract_type,type1=1)
+            response =  self.restapifuture.future_position_4fix(symbol=self.symbol,contractType=self.contract_type)
             holding=response['holding']
             position = {}
             
