@@ -1,33 +1,35 @@
 
 
-class BackTestBS(object):
+class ApiBS(object):
 
-    def __init__(self,target=0, base=0):
+    def __init__(self,tquantity=0, bquantity=0,feeratio=0):
         
         #self.__long_position = 0
         #self.__long_average_price = None
         #self.__short_position = 0
         #self.__short_average_price = None 
         
-        self.__target = target
-        self.__base = base
-        self.__init_target = target
-        self.__init_base = base        
+        self.__tquantity = tquantity
+        self.__bquantity = bquantity
+        self.__init_tquantity = tquantity
+        self.__init_bquantity = bquantity        
+        self.__feeratio = feeratio
         
-    def B(self,p,q):
-        if self.base >= p * q:
-            self.base -= p * q
-            self.target += q
+    def Buy(self,price,quantity):
+        if self.__bquantity >= price*quantity:
+            self.__bquantity -= price*quantity
+            self.__tquantity += quantity*(1-self.__feeratio)
         
-    def S(self,p,q):
-        if self.target >= q:
-            self.target -= q
-            self.base += p*q
+    def Sell(self,price,quantity):
+        if self.__tquantity >= quantity:
+            self.__tquantity -= quantity
+            self.__bquantity +=  price*quantity*(1-self.__feeratio)
             
-    def GetTarget(self):
-        return self.target
+    def GetTargetQuantity(self):
+        return self.__tquantity
     
-    def GetBase(self):
-        return self.base
+    def GetBaseQuantity(self):
+        return self.__bquantity
 
-    
+    def __str__(self):
+        return 'tquantity:%s->%s bquantity=%s->%s: ' % (self.__init_tquantity,self.__tquantity, self.__init_bquantity,self.__bquantity)

@@ -176,7 +176,26 @@ class BaseApi(MarketBase):
             logging.error(e)
             return None  
 
-
+    def GetKline(self,period,limit=0):
+        PERIOD_MAP = {'M1':'1min', 'M3':'3min', 'M5':'5min', 'M15':'15min', 'M30':'30min', 
+                      'H1':'1hour', 'H4':'4hour','H6':'6hour', 'H12':'12hour', 'D1':'D1', 'D7':'D7', "1M":"1M"}
+        lines=[]
+        try:
+            response =  self.restapi.kline(symbol=self.symbol,period=PERIOD_MAP[period],size=limit)   
+            for item in response:
+                    line={}
+                    line['T']= item[0]#dateparser.parse(str(item[0]))
+                    line['O']= float(item[1])
+                    line['H']= float(item[2])
+                    line['L']= float(item[3])
+                    line['C']= float(item[4])
+                    line['V']= float(item[5])
+                    lines.append(line)
+            return lines
+        except Exception as e:
+            logging.error(response)
+            logging.error(e)
+            return None    
 
     
     

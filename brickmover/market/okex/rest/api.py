@@ -34,6 +34,16 @@ class Api:
             
         return self.httpGet(self.__url,DEPTH_RESOURCE,params) 
 
+    def kline(self,symbol,period,size=0,since=0):
+        KLINE_RESOURCE = "/api/v1/kline.do"
+        params = 'symbol='+symbol
+        params += '&type='+period
+        if size!=0:
+            params += '&size=' + str(size)
+        if since!=0:
+            params += '&since=' + str(since)    
+        return self.httpGet(self.__url,KLINE_RESOURCE,params)
+
     #获取OKCOIN现货历史交易信息
     def trades(self,symbol = ''):
         TRADES_RESOURCE = "/api/v1/trades.do"
